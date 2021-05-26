@@ -14,7 +14,11 @@
 
 float speed_x = 0; //[radiany/s]
 float speed_y = 0; //[radiany/s]
+float speed_z = 0;
 float aspectRatio = 1;
+
+float camera_z = -20.0f;
+float camera_y = 10.0f; //pozycja kamery
 
 //Procedura obsługi błędów
 void error_callback(int error, const char* description) {
@@ -30,16 +34,29 @@ void key_callback(
 ) {
 	if (action == GLFW_PRESS) {
 		if (key == GLFW_KEY_LEFT) {
-			speed_y = -PI;
+			speed_y = -PI/2;
 		}
 		if (key == GLFW_KEY_RIGHT) {
-			speed_y = PI;
+			speed_y = PI/2;
 		}
 		if (key == GLFW_KEY_UP) {
-			speed_x = -PI;
+			speed_x = -PI/2;
 		}
 		if (key == GLFW_KEY_DOWN) {
-			speed_x = PI;
+			speed_x = PI/2;
+		}
+		if (key == GLFW_KEY_W) {
+			speed_z = 2*PI;
+		}
+		if (key == GLFW_KEY_S) {
+			speed_z = -2*PI;
+		}
+		if (key == GLFW_KEY_S) {
+			speed_z = -2 * PI;
+		}
+		if (key == GLFW_KEY_R) {
+			camera_y = 10.0f;
+			camera_z = -20.0f;	// reset pozycji kamery
 		}
 	}
 	if (action == GLFW_RELEASE) {
@@ -48,6 +65,9 @@ void key_callback(
 		}
 		if (key == GLFW_KEY_UP || key == GLFW_KEY_DOWN) {
 			speed_x = 0;
+		}
+		if (key == GLFW_KEY_W || key == GLFW_KEY_S) {
+			speed_z = 0;
 		}
 	}
 }
@@ -77,14 +97,14 @@ void freeOpenGLProgram(GLFWwindow* window) {
 }
 
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window,float angle_x,float angle_y) {
+void drawScene(GLFWwindow* window,float angle_x, float angle_y) {
 	//************Tutaj umieszczaj kod rysujący obraz******************l
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
 
 	glm::mat4 M = glm::mat4(1.0f); //Zainicjuj macierz modelu macierzą jednostkową
 	M = glm::rotate(M, angle_y, glm::vec3(0.0f, 1.0f, 0.0f)); //Pomnóż macierz modelu razy macierz obrotu o kąt angle wokół osi Y
 	M = glm::rotate(M, angle_x, glm::vec3(1.0f, 0.0f, 0.0f)); //Pomnóż macierz modelu razy macierz obrotu o kąt angle wokół osi X
-	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 10.0f, -25.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
+	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 10.0f, camera_z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
 	glm::mat4 P = glm::perspective(glm::radians(50.0f), 1.0f, 1.0f, 50.0f); //Wylicz macierz rzutowania
 
 
@@ -146,6 +166,7 @@ int main(void)
 	{
 		angle_x += speed_x * glfwGetTime(); //Oblicz kąt o jaki obiekt obrócił się podczas poprzedniej klatki
 		angle_y += speed_y * glfwGetTime(); //Oblicz kąt o jaki obiekt obrócił się podczas poprzedniej klatki
+		camera_z += speed_z * glfwGetTime();
 		glfwSetTime(0); //Wyzeruj licznik czasu
 		drawScene(window,angle_x,angle_y); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
