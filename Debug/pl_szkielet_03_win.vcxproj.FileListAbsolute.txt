@@ -1,0 +1,2 @@
+D:\git\3D-Room-Designer\Debug\pl_szkielet_03_win.exe
+D:\git\3D-Room-Designer\Debug\pl_szkielet_03_win.pdb

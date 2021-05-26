@@ -1,0 +1,8 @@
+﻿  lodepng.cpp
+  main_file.cpp
+D:\git\3D-Room-Designer\main_file.cpp(147,37): warning C4244: "+=": konwersja z "double" do "float", możliwa utrata danych
+D:\git\3D-Room-Designer\main_file.cpp(148,37): warning C4244: "+=": konwersja z "double" do "float", możliwa utrata danych
+  model.cpp
+  shaderprogram.cpp
+  Generowanie kodu...
+  pl_szkielet_03_win.vcxproj -> D:\git\3D-Room-Designer\Debug\pl_szkielet_03_win.exe
