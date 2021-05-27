@@ -19,6 +19,7 @@ float aspectRatio = 1;
 
 float camera_z = -20.0f;
 float camera_y = 10.0f; //pozycja kamery
+//KOMENTARZtthttyt
 
 //Procedura obsługi błędów
 void error_callback(int error, const char* description) {
