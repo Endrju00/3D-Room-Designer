@@ -1,2 +1,0 @@
-D:/Informatyka/Semestr 4/GKiW/Projekt/Interior decorator/pl_szkielet_03_win/glm/out/build/x64-Debug (domyślnie)/CMakeFiles/edit_cache.dir
-D:/Informatyka/Semestr 4/GKiW/Projekt/Interior decorator/pl_szkielet_03_win/glm/out/build/x64-Debug (domyślnie)/CMakeFiles/rebuild_cache.dir

@@ -1,2 +1,0 @@
-C:/Users/Filip/source/repos/Endrju00/3D-Room-Designer/glm/out/build/x64-Debug/CMakeFiles/edit_cache.dir
-C:/Users/Filip/source/repos/Endrju00/3D-Room-Designer/glm/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir

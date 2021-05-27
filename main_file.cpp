@@ -12,22 +12,29 @@
 #include "shaderprogram.h"
 #include "myRoom.h"
 
-float speed_x = 0; //[radiany/s]
-float speed_y = 0; //[radiany/s]
+//predkosc 
+float speed_x = 0;//[radiany/s]
+float speed_y = 0;//[radiany/s]
 float speed_z = 0;
 float aspectRatio = 1;
 
+//pozycja kamery
 float camera_z = -20.0f;
-float camera_y = 10.0f; //pozycja kamery
-//KOMENTARZtthttyt
-//proba 2poaspdoa
-//sdsdjhbdshd
+float camera_y = 10.0f; 
+
+
+//uchwyty tekstur
+GLuint walls_tex;
+GLuint floor_tex; 
+
 
 //Procedura obsługi błędów
 void error_callback(int error, const char* description) {
 	fputs(description, stderr);
 }
 
+
+//obsluga klawiszy
 void key_callback(
 	GLFWwindow* window,
 	int key,
@@ -37,22 +44,22 @@ void key_callback(
 ) {
 	if (action == GLFW_PRESS) {
 		if (key == GLFW_KEY_LEFT) {
-			speed_y = -PI/2;
+			speed_y = -PI / 2;
 		}
 		if (key == GLFW_KEY_RIGHT) {
-			speed_y = PI/2;
+			speed_y = PI / 2;
 		}
 		if (key == GLFW_KEY_UP) {
-			speed_x = -PI/2;
+			speed_x = -PI / 2;
 		}
 		if (key == GLFW_KEY_DOWN) {
-			speed_x = PI/2;
+			speed_x = PI / 2;
 		}
 		if (key == GLFW_KEY_W) {
-			speed_z = 2*PI;
+			speed_z = 2 * PI;
 		}
 		if (key == GLFW_KEY_S) {
-			speed_z = -2*PI;
+			speed_z = -2 * PI;
 		}
 		if (key == GLFW_KEY_S) {
 			speed_z = -2 * PI;
@@ -75,12 +82,39 @@ void key_callback(
 	}
 }
 
+
 // Skalowanie okna 
 void windowResizeCallback(GLFWwindow* window, int width, int height) {
 	if (height == 0) return;
-	aspectRatio = (float) width / (float)height;
+	aspectRatio = (float)width / (float)height;
 	glViewport(0, 0, width, height);
 }
+
+
+//Wczytywanie tekstury
+GLuint readTexture(const char* filename) {
+	GLuint tex;
+	glActiveTexture(GL_TEXTURE0);
+
+	//Wczytanie do pamięci komputera
+	std::vector<unsigned char> image;   //Alokuj wektor do wczytania obrazka
+	unsigned width, height;   //Zmienne do których wczytamy wymiary obrazka
+	//Wczytaj obrazek
+	unsigned error = lodepng::decode(image, width, height, filename);
+
+	//Import do pamięci karty graficznej
+	glGenTextures(1, &tex); //Zainicjuj jeden uchwyt
+	glBindTexture(GL_TEXTURE_2D, tex); //Uaktywnij uchwyt
+	//Wczytaj obrazek do pamięci KG skojarzonej z uchwytem
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0,
+		GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	return tex;
+}
+
 
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
@@ -90,6 +124,8 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
 	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, key_callback);
+	walls_tex = readTexture("textures/bricks.png");  // wczytanie tekstury ściany
+	floor_tex = readTexture("textures/floor.png"); // wczytanie tekstury podłogi
 }
 
 
@@ -99,8 +135,9 @@ void freeOpenGLProgram(GLFWwindow* window) {
     //************Tutaj umieszczaj kod, który należy wykonać po zakończeniu pętli głównej************
 }
 
+
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window,float angle_x, float angle_y) {
+void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
 	//************Tutaj umieszczaj kod rysujący obraz******************l
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
 
@@ -110,26 +147,186 @@ void drawScene(GLFWwindow* window,float angle_x, float angle_y) {
 	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 10.0f, camera_z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
 	glm::mat4 P = glm::perspective(glm::radians(50.0f), 1.0f, 1.0f, 50.0f); //Wylicz macierz rzutowania
 
+	
+	spTextured->use();
+	glUniformMatrix4fv(spTextured->u("P"), 1, false, glm::value_ptr(P));
+	glUniformMatrix4fv(spTextured->u("V"), 1, false, glm::value_ptr(V));
 
-	spColored->use();
-	glUniformMatrix4fv(spColored->u("P"), 1, false, glm::value_ptr(P));
-	glUniformMatrix4fv(spColored->u("V"), 1, false, glm::value_ptr(V));
-	glUniformMatrix4fv(spColored->u("M"), 1, false, glm::value_ptr(M));
 
-	glEnableVertexAttribArray(spColored->a("vertex"));
-	glVertexAttribPointer(spColored->a("vertex"), 4, GL_FLOAT, false, 0, myRoomVertices);
+	glm::mat4 M1 = M; // Rysowanie ścian
+	glUniformMatrix4fv(spTextured->u("M"), 1, false, glm::value_ptr(M1));
+	glEnableVertexAttribArray(spTextured->a("vertex"));
+	glVertexAttribPointer(spTextured->a("vertex"), 4, GL_FLOAT, false, 0, myRoomVertices);
 
-	glEnableVertexAttribArray(spColored->a("color"));
-	glVertexAttribPointer(spColored->a("color"), 4, GL_FLOAT, false, 0, myRoomColors);
+	glEnableVertexAttribArray(spTextured->a("texCoord"));
+	glVertexAttribPointer(spTextured->a("texCoord"), 2, GL_FLOAT, false, 0, myRoomTexCoords);
+
+	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, walls_tex);
+	glUniform1i(spTextured->u("tex"), 0);
 
 	glDrawArrays(GL_TRIANGLES, 0, myRoomVertexCount);
 
-	glDisableVertexAttribArray(spColored->a("vertex"));
-	glDisableVertexAttribArray(spColored->a("color"));
+
+	glm::mat4 M2 = M; // Rysowanie podłogi
+	glUniformMatrix4fv(spTextured->u("M"), 1, false, glm::value_ptr(M2));
+	glEnableVertexAttribArray(spTextured->a("vertex"));
+	glVertexAttribPointer(spTextured->a("vertex"), 4, GL_FLOAT, false, 0, myFloorVertices);
+
+	glEnableVertexAttribArray(spTextured->a("texCoord"));
+	glVertexAttribPointer(spTextured->a("texCoord"), 2, GL_FLOAT, false, 0, myRoomTexCoords);
+
+	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, floor_tex);
+	glUniform1i(spTextured->u("tex"), 0);
+
+	glDrawArrays(GL_TRIANGLES, 0, myRoomVertexCount);
+
+
+	glDisableVertexAttribArray(spTextured->a("vertex"));
+	glDisableVertexAttribArray(spTextured->a("texCoord"));
 
 	glfwSwapBuffers(window); //Skopiuj bufor tylny do bufora przedniego
 }
-
+//
+//void drawScene4(GLFWwindow* window, float angle_x, float angle_y) {
+//	//************Tutaj umieszczaj kod rysujący obraz******************l
+//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
+//
+//	glm::mat4 M = glm::mat4(1.0f); //Zainicjuj macierz modelu macierzą jednostkową
+//	M = glm::rotate(M, angle_y, glm::vec3(0.0f, 1.0f, 0.0f)); //Pomnóż macierz modelu razy macierz obrotu o kąt angle wokół osi Y
+//	M = glm::rotate(M, angle_x, glm::vec3(1.0f, 0.0f, 0.0f)); //Pomnóż macierz modelu razy macierz obrotu o kąt angle wokół osi X
+//	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
+//	glm::mat4 P = glm::perspective(glm::radians(50.0f), 1.0f, 1.0f, 50.0f); //Wylicz macierz rzutowania
+//
+//	//Tablica współrzędnych teksturowania
+//	float texCoords[] = {
+//	  1.0f, 0.0f,	//A
+//	  0.0f, 1.0f,    //B
+//	  0.0f, 0.0f,    //C
+//
+//	  1.0f, 0.0f,    //A
+//	  1.0f, 1.0f,    //D
+//	  0.0f, 1.0f,    //B
+//
+//	  1.0f, 0.0f,	//A
+//	  0.0f, 1.0f,    //B
+//	  0.0f, 0.0f,    //C
+//
+//	  1.0f, 0.0f,    //A
+//	  1.0f, 1.0f,    //D
+//	  0.0f, 1.0f,    //B
+//
+//	  1.0f, 0.0f,	//A
+//	  0.0f, 1.0f,    //B
+//	  0.0f, 0.0f,    //C
+//
+//	  1.0f, 0.0f,    //A
+//	  1.0f, 1.0f,    //D
+//	  0.0f, 1.0f,    //B
+//
+//
+//	  1.0f, 0.0f,	//A
+//	  0.0f, 1.0f,    //B
+//	  0.0f, 0.0f,    //C
+//
+//	  1.0f, 0.0f,    //A
+//	  1.0f, 1.0f,    //D
+//	  0.0f, 1.0f,    //B
+//
+//
+//	  1.0f, 0.0f,	//A
+//	  0.0f, 1.0f,    //B
+//	  0.0f, 0.0f,    //C
+//
+//	  1.0f, 0.0f,    //A
+//	  1.0f, 1.0f,    //D
+//	  0.0f, 1.0f,    //B
+//
+//	  1.0f, 0.0f,	//A
+//	  0.0f, 1.0f,    //B
+//	  0.0f, 0.0f,    //C
+//
+//	  1.0f, 0.0f,    //A
+//	  1.0f, 1.0f,    //D
+//	  0.0f, 1.0f,    //B
+//	};
+//
+//	//Tablica wektorów normalnych
+//	float normals[] = {
+//		0.0f, 0.0f, -1.0f, 0.0f,
+//		0.0f, 0.0f, -1.0f, 0.0f,
+//		0.0f, 0.0f, -1.0f, 0.0f,
+//
+//		0.0f, 0.0f, -1.0f, 0.0f,
+//		0.0f, 0.0f, -1.0f, 0.0f,
+//		0.0f, 0.0f, -1.0f, 0.0f,
+//
+//		0.0f, 0.0f, 1.0f, 0.0f,
+//		0.0f, 0.0f, 1.0f, 0.0f,
+//		0.0f, 0.0f, 1.0f, 0.0f,
+//
+//		0.0f, 0.0f, 1.0f, 0.0f,
+//		0.0f, 0.0f, 1.0f, 0.0f,
+//		0.0f, 0.0f, 1.0f, 0.0f,
+//
+//		0.0f, -1.0f, 0.0f, 0.0f,
+//		0.0f, -1.0f, 0.0f, 0.0f,
+//		0.0f, -1.0f, 0.0f, 0.0f,
+//
+//		0.0f, -1.0f, 0.0f, 0.0f,
+//		0.0f, -1.0f, 0.0f, 0.0f,
+//		0.0f, -1.0f, 0.0f, 0.0f,
+//
+//		0.0f, 1.0f, 0.0f, 0.0f,
+//		0.0f, 1.0f, 0.0f, 0.0f,
+//		0.0f, 1.0f, 0.0f, 0.0f,
+//
+//		0.0f, 1.0f, 0.0f, 0.0f,
+//		0.0f, 1.0f, 0.0f, 0.0f,
+//		0.0f, 1.0f, 0.0f, 0.0f,
+//
+//		-1.0f, 0.0f, 0.0f, 0.0f,
+//		-1.0f, 0.0f, 0.0f, 0.0f,
+//		-1.0f, 0.0f, 0.0f, 0.0f,
+//
+//		-1.0f, 0.0f, 0.0f, 0.0f,
+//		-1.0f, 0.0f, 0.0f, 0.0f,
+//		-1.0f, 0.0f, 0.0f, 0.0f,
+//
+//		1.0f, 0.0f, 0.0f, 0.0f,
+//		1.0f, 0.0f, 0.0f, 0.0f,
+//		1.0f, 0.0f, 0.0f, 0.0f,
+//
+//		1.0f, 0.0f, 0.0f, 0.0f,
+//		1.0f, 0.0f, 0.0f, 0.0f,
+//		1.0f, 0.0f, 0.0f, 0.0f,
+//	};
+//
+//	//Liczba wierzchołków w tablicy
+//	int vertexCount = myRoomVertexCount;
+//
+//	spLambertTextured->use();
+//	glUniformMatrix4fv(spLambertTextured->u("P"), 1, false, glm::value_ptr(P));
+//	glUniformMatrix4fv(spLambertTextured->u("V"), 1, false, glm::value_ptr(V));
+//	glUniformMatrix4fv(spLambertTextured->u("M"), 1, false, glm::value_ptr(M));
+//
+//	glEnableVertexAttribArray(spLambertTextured->a("vertex"));
+//	glVertexAttribPointer(spLambertTextured->a("vertex"), 4, GL_FLOAT, false, 0, myRoomVertices);
+//	glEnableVertexAttribArray(spLambertTextured->a("normal"));
+//	glVertexAttribPointer(spLambertTextured->a("normal"), 4, GL_FLOAT, false, 0, normals);
+//
+//	glEnableVertexAttribArray(spLambertTextured->a("texCoord"));
+//	glVertexAttribPointer(spLambertTextured->a("texCoord"), 2, GL_FLOAT, false, 0, texCoords);
+//
+//	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, tex); glUniform1i(spLambertTextured->u("tex"), 0);
+//	glUniform1i(spLambertTextured->u("tex"), 0);
+//
+//	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+//
+//	glDisableVertexAttribArray(spLambertTextured->a("vertex"));
+//	glDisableVertexAttribArray(spLambertTextured->a("normal"));
+//	glDisableVertexAttribArray(spLambertTextured->a("texCoord"));
+//	glfwSwapBuffers(window); //Skopiuj bufor tylny do bufora przedniego
+//}
 
 int main(void)
 {
@@ -174,6 +371,9 @@ int main(void)
 		drawScene(window,angle_x,angle_y); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
+
+	glDeleteTextures(1, &walls_tex);
+	glDeleteTextures(1, &floor_tex);
 
 	freeOpenGLProgram(window);
 
