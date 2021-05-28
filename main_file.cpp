@@ -41,6 +41,147 @@ void error_callback(int error, const char* description) {
 	fputs(description, stderr);
 }
 
+// wyswietl zawartosc folderu
+void list_dir(const char* path) {
+	struct dirent* entry;
+	DIR* dir = opendir(path);
+	int i = -1;
+	if (dir == NULL) {
+		return;
+	}
+	while ((entry = readdir(dir)) != NULL) {
+		if (i > 0) {
+			cout << "    --> " << i << ". " << entry->d_name << endl;
+		}
+		i++;
+	}
+	closedir(dir);
+}
+
+
+//Wczytywanie tekstury
+GLuint readTexture(const char* filename) {
+	GLuint tex;
+	glActiveTexture(GL_TEXTURE0);
+
+	//Wczytanie do pamięci komputera
+	std::vector<unsigned char> image;   //Alokuj wektor do wczytania obrazka
+	unsigned width, height;   //Zmienne do których wczytamy wymiary obrazka
+	//Wczytaj obrazek
+	unsigned error = lodepng::decode(image, width, height, filename);
+
+	//Import do pamięci karty graficznej
+	glGenTextures(1, &tex); //Zainicjuj jeden uchwyt
+	glBindTexture(GL_TEXTURE_2D, tex); //Uaktywnij uchwyt
+	//Wczytaj obrazek do pamięci KG skojarzonej z uchwytem
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0,
+		GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	return tex;
+}
+
+
+void changeRoomTexture() {
+	string floor_path = "textures/floor/";
+	string walls_path = "textures/walls/";
+	string choice;
+	
+	cout << "\nWybierz teksture dla scian:" << endl;
+	list_dir("textures/walls");
+
+	cout << "\nWpisz nazwe tekstury: ";
+	cin >> choice;
+	walls_path += choice;	// stworzenie sciezki
+
+	char* char_wall;
+	string str_obj(walls_path);		// zamiana z string na char
+	char_wall = &str_obj[0];
+
+	cout << "\nWybierz teksture dla podlogi:" << endl;
+	list_dir("textures/floor");
+
+	cout << "\nWpisz nazwe tekstury: ";
+	cin >> choice;
+	floor_path += choice;	// stworzenie sciezki
+
+	char* char_floor;
+	string floor_obj(floor_path);	// zamiana z string na char
+	char_floor = &floor_obj[0];
+
+	walls_tex = readTexture(char_wall);  // wczytanie tekstury ściany
+	floor_tex = readTexture(char_floor); // wczytanie tekstury podłogi
+
+	cout << "\n>>Generowanie pokoju..." << endl;
+}
+
+void changeFloorTexture() {
+	string floor_path = "textures/floor/";
+	string choice;
+
+	cout << "\nWybierz teksture dla podlogi:" << endl;
+	list_dir("textures/floor");
+
+	cout << "\nWpisz nazwe tekstury: ";
+	cin >> choice;
+	floor_path += choice;	// stworzenie sciezki
+
+	char* char_floor;
+	string floor_obj(floor_path);	// zamiana z string na char
+	char_floor = &floor_obj[0];
+
+	floor_tex = readTexture(char_floor); // wczytanie tekstury podłogi
+
+	cout << "\n>>Wprowadzanie zmian..." << endl;
+}
+
+void changeWallsTexture() {
+	string walls_path = "textures/walls/";
+	string choice;
+
+	cout << "\nWybierz teksture dla scian:" << endl;
+	list_dir("textures/walls");
+
+	cout << "\nWpisz nazwe tekstury: ";
+	cin >> choice;
+	walls_path += choice;	// stworzenie sciezki
+
+	char* char_wall;
+	string str_obj(walls_path);		// zamiana z string na char
+	char_wall = &str_obj[0];
+
+	walls_tex = readTexture(char_wall);  // wczytanie tekstury ściany
+
+	cout << "\n>>Wprowadzanie zmian..." << endl;
+}
+
+// Menu uzytkownika
+void menu() {
+	cout << "\n>>Menu" << endl;
+	cout << "1. Zmien wyglad podlogi." << endl;
+	cout << "2. Zmien wyglad scian." << endl;
+	cout << "3. Zmien wyglad calego pomieszczenia." << endl;
+	cout << "4. Powrot." << endl;
+
+	int num;
+	cout << "Wprowadz numer: ";
+	cin >> num;
+
+	switch (num) {
+	case 1:
+		changeFloorTexture(); break;
+	case 2:
+		changeWallsTexture(); break;
+	case 3:
+		changeRoomTexture(); break;
+	case 4:
+		break;
+	default:
+		cout << "Bledna opcja :(" << endl;
+	}
+}
 
 //obsluga klawiszy
 void key_callback(
@@ -76,6 +217,9 @@ void key_callback(
 			camera_y = 10.0f;
 			camera_z = -20.0f;	// reset pozycji kamery
 		}
+		if (key == GLFW_KEY_M) {
+			menu();
+		}
 	}
 	if (action == GLFW_RELEASE) {
 		if (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT) {
@@ -90,21 +234,6 @@ void key_callback(
 	}
 }
 
-void list_dir(const char* path) {
-	struct dirent* entry;
-	DIR* dir = opendir(path);
-	int i = -1;
-	if (dir == NULL) {
-		return;
-	}
-	while ((entry = readdir(dir)) != NULL) {
-		if (i > 0) {
-			cout << "    --> " << i << ". " << entry->d_name << endl;
-		}
-		i++;
-	}
-	closedir(dir);
-}
 
 // Skalowanie okna 
 void windowResizeCallback(GLFWwindow* window, int width, int height) {
@@ -113,62 +242,13 @@ void windowResizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-
-//Wczytywanie tekstury
-GLuint readTexture(const char* filename) {
-	GLuint tex;
-	glActiveTexture(GL_TEXTURE0);
-
-	//Wczytanie do pamięci komputera
-	std::vector<unsigned char> image;   //Alokuj wektor do wczytania obrazka
-	unsigned width, height;   //Zmienne do których wczytamy wymiary obrazka
-	//Wczytaj obrazek
-	unsigned error = lodepng::decode(image, width, height, filename);
-
-	//Import do pamięci karty graficznej
-	glGenTextures(1, &tex); //Zainicjuj jeden uchwyt
-	glBindTexture(GL_TEXTURE_2D, tex); //Uaktywnij uchwyt
-	//Wczytaj obrazek do pamięci KG skojarzonej z uchwytem
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0,
-		GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	return tex;
-}
-
-void choiceTexture() {
-	string floor_path = "textures/floor/";
-	string walls_path = "textures/walls/";
-	string choice;
+void welcome() {
 	cout << "\n************** Witaj w dekoratorze wnetrz! **************" << endl;
-	cout << "\nWybierz teksture dla scian:" << endl;
-	list_dir("textures/walls");
-
-	cout << "\nWpisz nazwe tekstury: ";
-	cin >> choice;
-	walls_path += choice;	// stworzenie sciezki
-
-	char* char_wall;
-	string str_obj(walls_path);		// zamiana z string na char
-	char_wall = &str_obj[0];
-
-	cout << "\nWybierz teksture dla podlogi:" << endl;
-	list_dir("textures/floor");
-
-	cout << "\nWpisz nazwe tekstury: ";
-	cin >> choice;
-	floor_path += choice;	// stworzenie sciezki
-
-	char* char_floor;
-	string floor_obj(floor_path);	// zamiana z string na char
-	char_floor = &floor_obj[0];
-
-	walls_tex = readTexture(char_wall);  // wczytanie tekstury ściany
-	floor_tex = readTexture(char_floor); // wczytanie tekstury podłogi
-
-	cout << "\n>>Generowanie pokoju..." << endl;
+	cout << "\n--> Aby wyswietlic menu - uzyj klawisza M." << endl;						// powitanie
+	cout << "--> Aby obracac pokojem - uzyj strzalek." << endl;
+	cout << "--> Aby przyblizac/oddalac kamere - uzyj odpowiednio klawiszy W oraz S." << endl;
+	cout << "--> Aby zresetowac pozycje kamery - uzyj klawisza R." << endl;
+	cout << "\n!!! Podpowiedz: uzywaj powyzszych klawiszy w oknie OpenGL. !!!" << endl;
 }
 
 //Procedura inicjująca
@@ -180,10 +260,10 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, key_callback);
 	
-	choiceTexture();
-	//char path[] = "textures/walls/light_bricks.png";
+	walls_tex = readTexture("textures/walls/light_bricks.png");  // wczytanie domyslnej tekstury ściany
+	floor_tex = readTexture("textures/floor/light_wood.png"); // wczytanie domyslnej tekstury podłogi
 
-	
+	welcome();
 }
 
 
