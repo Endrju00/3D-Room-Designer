@@ -7,10 +7,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
+#include <string>
+#include <dirent.h>
+#include <sys/types.h>
+
 #include "constants.h"
 #include "lodepng.h"
 #include "shaderprogram.h"
 #include "myRoom.h"
+
+using namespace std;
+
 
 //predkosc 
 float speed_x = 0;//[radiany/s]
@@ -82,6 +90,21 @@ void key_callback(
 	}
 }
 
+void list_dir(const char* path) {
+	struct dirent* entry;
+	DIR* dir = opendir(path);
+	int i = -1;
+	if (dir == NULL) {
+		return;
+	}
+	while ((entry = readdir(dir)) != NULL) {
+		if (i > 0) {
+			cout << "    --> " << i << ". " << entry->d_name << endl;
+		}
+		i++;
+	}
+	closedir(dir);
+}
 
 // Skalowanie okna 
 void windowResizeCallback(GLFWwindow* window, int width, int height) {
@@ -115,6 +138,38 @@ GLuint readTexture(const char* filename) {
 	return tex;
 }
 
+void choiceTexture() {
+	string floor_path = "textures/floor/";
+	string walls_path = "textures/walls/";
+	string choice;
+	cout << "\n************** Witaj w dekoratorze wnetrz! **************" << endl;
+	cout << "\nWybierz teksture dla scian:" << endl;
+	list_dir("textures/walls");
+
+	cout << "\nWpisz nazwe tekstury: ";
+	cin >> choice;
+	walls_path += choice;	// stworzenie sciezki
+
+	char* char_wall;
+	string str_obj(walls_path);		// zamiana z string na char
+	char_wall = &str_obj[0];
+
+	cout << "\nWybierz teksture dla podlogi:" << endl;
+	list_dir("textures/floor");
+
+	cout << "\nWpisz nazwe tekstury: ";
+	cin >> choice;
+	floor_path += choice;	// stworzenie sciezki
+
+	char* char_floor;
+	string floor_obj(floor_path);	// zamiana z string na char
+	char_floor = &floor_obj[0];
+
+	walls_tex = readTexture(char_wall);  // wczytanie tekstury ściany
+	floor_tex = readTexture(char_floor); // wczytanie tekstury podłogi
+
+	cout << "\n>>Generowanie pokoju..." << endl;
+}
 
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
@@ -124,8 +179,11 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
 	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, key_callback);
-	walls_tex = readTexture("textures/bricks.png");  // wczytanie tekstury ściany
-	floor_tex = readTexture("textures/floor.png"); // wczytanie tekstury podłogi
+	
+	choiceTexture();
+	//char path[] = "textures/walls/light_bricks.png";
+
+	
 }
 
 
