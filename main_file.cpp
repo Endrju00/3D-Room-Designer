@@ -84,6 +84,18 @@ GLuint readTexture(const char* filename) {
 }
 
 
+// informacja odnosnie sterowania
+void info() {
+
+	cout << "\n--> Aby wyswietlic menu - uzyj klawisza M." << endl;						
+	cout << "--> Aby obracac pokojem - uzyj strzalek." << endl;
+	cout << "--> Aby przyblizac/oddalac kamere - uzyj odpowiednio klawiszy W oraz S." << endl;
+	cout << "--> Aby zresetowac pozycje kamery - uzyj klawisza R." << endl;
+	cout << "\n!!! Podpowiedz: uzywaj powyzszych klawiszy w oknie OpenGL. !!!" << endl;
+}
+
+
+//zmiana tekstur calego pomieszczenia
 void changeRoomTexture() {
 	string floor_path = "textures/floor/";
 	string walls_path = "textures/walls/";
@@ -115,8 +127,11 @@ void changeRoomTexture() {
 	floor_tex = readTexture(char_floor); // wczytanie tekstury podłogi
 
 	cout << "\n>>Generowanie pokoju..." << endl;
+	info();
 }
 
+
+//zmiana tekstury podlogi
 void changeFloorTexture() {
 	string floor_path = "textures/floor/";
 	string choice;
@@ -135,8 +150,11 @@ void changeFloorTexture() {
 	floor_tex = readTexture(char_floor); // wczytanie tekstury podłogi
 
 	cout << "\n>>Wprowadzanie zmian..." << endl;
+	info();
 }
 
+
+//zmiana tekstury scian
 void changeWallsTexture() {
 	string walls_path = "textures/walls/";
 	string choice;
@@ -155,6 +173,7 @@ void changeWallsTexture() {
 	walls_tex = readTexture(char_wall);  // wczytanie tekstury ściany
 
 	cout << "\n>>Wprowadzanie zmian..." << endl;
+	info();
 }
 
 // Menu uzytkownika
@@ -177,7 +196,7 @@ void menu() {
 	case 3:
 		changeRoomTexture(); break;
 	case 4:
-		break;
+		info(); break;
 	default:
 		cout << "Bledna opcja :(" << endl;
 	}
@@ -242,14 +261,6 @@ void windowResizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void welcome() {
-	cout << "\n************** Witaj w dekoratorze wnetrz! **************" << endl;
-	cout << "\n--> Aby wyswietlic menu - uzyj klawisza M." << endl;						// powitanie
-	cout << "--> Aby obracac pokojem - uzyj strzalek." << endl;
-	cout << "--> Aby przyblizac/oddalac kamere - uzyj odpowiednio klawiszy W oraz S." << endl;
-	cout << "--> Aby zresetowac pozycje kamery - uzyj klawisza R." << endl;
-	cout << "\n!!! Podpowiedz: uzywaj powyzszych klawiszy w oknie OpenGL. !!!" << endl;
-}
 
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
@@ -262,8 +273,8 @@ void initOpenGLProgram(GLFWwindow* window) {
 	
 	walls_tex = readTexture("textures/walls/light_bricks.png");  // wczytanie domyslnej tekstury ściany
 	floor_tex = readTexture("textures/floor/light_wood.png"); // wczytanie domyslnej tekstury podłogi
-
-	welcome();
+	cout << "\n************** Witaj w dekoratorze wnetrz! **************" << endl;
+	info();
 }
 
 
