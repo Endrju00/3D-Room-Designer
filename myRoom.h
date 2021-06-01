@@ -2,7 +2,7 @@
 #define MYROOM_H_INCLUDED
 
 int myRoomVertexCount = 24;
-float length = 7, width = 5, height = 3;
+float length = 10, width = 5, height = 2;
 
 
 float myRoomVertices[] = {
@@ -300,6 +300,77 @@ float myRoomVertexNormals[] = {
 	 1.0f, 1.0f,-1.0f,0.0f,
 };
 
+//float myWallsVertexNormals[] = {
+//
+//	//Œciana 2
+//		-1.0f,-1.0f, 1.0f,0.0f,
+//		1.0f, 1.0f, 1.0f,0.0f,
+//		1.0f,-1.0f, 1.0f,0.0f,
+//
+//		-1.0f,-1.0f, 1.0f,0.0f,
+//		-1.0f, 1.0f, 1.0f,0.0f,
+//		1.0f, 1.0f, 1.0f,0.0f,
+//		
+//		//Œciana 5
+//	  -1.0f,-1.0f,-1.0f,0.0f,
+//	  -1.0f, 1.0f, 1.0f,0.0f,
+//	  -1.0f,-1.0f, 1.0f,0.0f,
+//
+//	  -1.0f,-1.0f,-1.0f,0.0f,
+//	  -1.0f, 1.0f,-1.0f,0.0f,
+//	  -1.0f, 1.0f, 1.0f,0.0f,
+//
+//	  //Œciana 6
+//	 1.0f,-1.0f, 1.0f,0.0f,
+//	 1.0f, 1.0f,-1.0f,0.0f,
+//	 1.0f,-1.0f,-1.0f,0.0f,
+//
+//	 1.0f,-1.0f, 1.0f,0.0f,
+//	 1.0f, 1.0f, 1.0f,0.0f,
+//	 1.0f, 1.0f,-1.0f,0.0f,
+//};
+
+float myWallsVertexNormals[] = {
+
+	//Œciana 2
+		1.0f,1.0f, -1.0f, 0.0f,
+		-1.0f, -1.0f, -1.0f,0.0f,
+		-1.0f,1.0f, -1.0f,0.0f,
+
+		1.0f,1.0f, -1.0f,0.0f,
+		1.0f, -1.0f, -1.0f,0.0f,
+		-1.0f, -1.0f, -1.0f,0.0f,
+
+		//Œciana 5
+	  1.0f,1.0f,1.0f,0.0f,
+	  1.0f, -1.0f, -1.0f,0.0f,
+	  1.0f,1.0f, -1.0f,0.0f,
+
+	  1.0f,1.0f,1.0f,0.0f,
+	  1.0f, -1.0f,1.0f,0.0f,
+	  1.0f, -1.0f, -1.0f,0.0f,
+
+	  //Œciana 6
+	 -1.0f,1.0f, -1.0f,0.0f,
+	 -1.0f, -1.0f,1.0f,0.0f,
+	 -1.0f,1.0f,1.0f,0.0f,
+
+	-1.0f,1.0f, -1.0f,0.0f,
+	 -1.0f, -1.0f, -1.0f,0.0f,
+	 -1.0f, -1.0f,1.0f,0.0f,
+};
+
+float myFloorVertexNormals[] = {
+
+	//Œciana 3
+	1.0f,1.0f,1.0f,0.0f,
+	-1.0f,1.0f, -1.0f,0.0f,
+	-1.0f,1.0f,1.0f,0.0f,
+
+	1.0f,1.0f,1.0f,0.0f,
+	1.0f,1.0f, -1.0f,0.0f,
+	-1.0f,1.0f, -1.0f,0.0f,
+};
 
 #endif // MYCUBE_H_INCLUDED
 

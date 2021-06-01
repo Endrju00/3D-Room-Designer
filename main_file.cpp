@@ -30,6 +30,8 @@ float aspectRatio = 1;
 float camera_z = -20.0f;
 float camera_y = 10.0f; 
 
+//Program cieniujący
+ShaderProgram* sp;
 
 //uchwyty tekstur
 GLuint walls_tex;
@@ -211,18 +213,7 @@ void key_callback(
 	int mod
 ) {
 	if (action == GLFW_PRESS) {
-		if (key == GLFW_KEY_LEFT) {
-			speed_y = -PI / 2;
-		}
-		if (key == GLFW_KEY_RIGHT) {
-			speed_y = PI / 2;
-		}
-		if (key == GLFW_KEY_UP) {
-			speed_x = -PI / 2;
-		}
-		if (key == GLFW_KEY_DOWN) {
-			speed_x = PI / 2;
-		}
+		
 		if (key == GLFW_KEY_W) {
 			speed_z = 2 * PI;
 		}
@@ -241,12 +232,7 @@ void key_callback(
 		}
 	}
 	if (action == GLFW_RELEASE) {
-		if (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT) {
-			speed_y = 0;
-		}
-		if (key == GLFW_KEY_UP || key == GLFW_KEY_DOWN) {
-			speed_x = 0;
-		}
+		
 		if (key == GLFW_KEY_W || key == GLFW_KEY_S) {
 			speed_z = 0;
 		}
@@ -264,13 +250,13 @@ void windowResizeCallback(GLFWwindow* window, int width, int height) {
 
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
-    initShaders();
+    //initShaders();
 	//************Tutaj umieszczaj kod, który należy wykonać raz, na początku programu************
-	glClearColor(0, 0, 0, 1); //Ustaw kolor czyszczenia bufora kolorów
+	glClearColor(1, 1, 1, 1); //Ustaw kolor czyszczenia bufora kolorów
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
 	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, key_callback);
-	
+	sp = new ShaderProgram("v_simplest.glsl", NULL, "f_simplest.glsl");
 	walls_tex = readTexture("textures/walls/light_bricks.png");  // wczytanie domyslnej tekstury ściany
 	floor_tex = readTexture("textures/floor/light_wood.png"); // wczytanie domyslnej tekstury podłogi
 	cout << "\n************** Witaj w dekoratorze wnetrz! **************" << endl;
@@ -280,58 +266,84 @@ void initOpenGLProgram(GLFWwindow* window) {
 
 //Zwolnienie zasobów zajętych przez program
 void freeOpenGLProgram(GLFWwindow* window) {
-    freeShaders();
+    /*freeShaders();*/
     //************Tutaj umieszczaj kod, który należy wykonać po zakończeniu pętli głównej************
+	glDeleteTextures(1, &walls_tex);
+	glDeleteTextures(1, &floor_tex);
+	delete sp;
 }
 
 
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
+void drawScene(GLFWwindow* window) {
 	//************Tutaj umieszczaj kod rysujący obraz******************l
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
 
 	glm::mat4 M = glm::mat4(1.0f); //Zainicjuj macierz modelu macierzą jednostkową
-	M = glm::rotate(M, angle_y, glm::vec3(0.0f, 1.0f, 0.0f)); //Pomnóż macierz modelu razy macierz obrotu o kąt angle wokół osi Y
-	M = glm::rotate(M, angle_x, glm::vec3(1.0f, 0.0f, 0.0f)); //Pomnóż macierz modelu razy macierz obrotu o kąt angle wokół osi X
 	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 10.0f, camera_z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
 	glm::mat4 P = glm::perspective(glm::radians(50.0f), 1.0f, 1.0f, 50.0f); //Wylicz macierz rzutowania
 
 	
-	spTextured->use();
-	glUniformMatrix4fv(spTextured->u("P"), 1, false, glm::value_ptr(P));
-	glUniformMatrix4fv(spTextured->u("V"), 1, false, glm::value_ptr(V));
+	sp->use();
+	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
+	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
 
 
 	glm::mat4 M1 = M; // Rysowanie ścian
-	glUniformMatrix4fv(spTextured->u("M"), 1, false, glm::value_ptr(M1));
-	glEnableVertexAttribArray(spTextured->a("vertex"));
-	glVertexAttribPointer(spTextured->a("vertex"), 4, GL_FLOAT, false, 0, myRoomVertices);
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M1));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, myRoomVertices);
 
-	glEnableVertexAttribArray(spTextured->a("texCoord"));
-	glVertexAttribPointer(spTextured->a("texCoord"), 2, GL_FLOAT, false, 0, myRoomTexCoords);
+	glEnableVertexAttribArray(sp->a("color"));
+	glVertexAttribPointer(sp->a("color"), 4, GL_FLOAT, false, 0, myRoomColors);
+	
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, myWallsVertexNormals);
+	
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, myRoomTexCoords);
 
-	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, walls_tex);
-	glUniform1i(spTextured->u("tex"), 0);
+	glUniform1i(sp->u("textureMap0"), 0);
+	glActiveTexture(GL_TEXTURE0); 
+	glBindTexture(GL_TEXTURE_2D, walls_tex);
+	
 
 	glDrawArrays(GL_TRIANGLES, 0, myRoomVertexCount);
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("color"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+
+	//myFloorVertices, myFloorTexCoords, myFloorVertexNormals
 
 
 	glm::mat4 M2 = M; // Rysowanie podłogi
-	glUniformMatrix4fv(spTextured->u("M"), 1, false, glm::value_ptr(M2));
-	glEnableVertexAttribArray(spTextured->a("vertex"));
-	glVertexAttribPointer(spTextured->a("vertex"), 4, GL_FLOAT, false, 0, myFloorVertices);
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M2));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, myFloorVertices);
 
-	glEnableVertexAttribArray(spTextured->a("texCoord"));
-	glVertexAttribPointer(spTextured->a("texCoord"), 2, GL_FLOAT, false, 0, myRoomTexCoords);
+	glEnableVertexAttribArray(sp->a("color"));
+	glVertexAttribPointer(sp->a("color"), 4, GL_FLOAT, false, 0, myRoomColors);
 
-	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, floor_tex);
-	glUniform1i(spTextured->u("tex"), 0);
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, myFloorVertexNormals);
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, myRoomTexCoords);
+
+	glUniform1i(sp->u("textureMap0"), 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, floor_tex);
+	
 
 	glDrawArrays(GL_TRIANGLES, 0, myRoomVertexCount);
 
 
-	glDisableVertexAttribArray(spTextured->a("vertex"));
-	glDisableVertexAttribArray(spTextured->a("texCoord"));
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("color"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
 
 	glfwSwapBuffers(window); //Skopiuj bufor tylny do bufora przedniego
 }
@@ -508,16 +520,12 @@ int main(void)
 	initOpenGLProgram(window); //Operacje inicjujące
 
 	//Główna pętla
-	float angle_x = 0; //zadeklaruj zmienną przechowującą aktualny kąt obrotu
-	float angle_y = 0; //zadeklaruj zmienną przechowującą aktualny kąt obrotu
 	glfwSetTime(0); //Wyzeruj licznik czasu
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
-		angle_x += speed_x * glfwGetTime(); //Oblicz kąt o jaki obiekt obrócił się podczas poprzedniej klatki
-		angle_y += speed_y * glfwGetTime(); //Oblicz kąt o jaki obiekt obrócił się podczas poprzedniej klatki
 		camera_z += speed_z * glfwGetTime();
 		glfwSetTime(0); //Wyzeruj licznik czasu
-		drawScene(window,angle_x,angle_y); //Wykonaj procedurę rysującą
+		drawScene(window); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
 
