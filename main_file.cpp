@@ -251,14 +251,21 @@ void key_callback(
 	int mod
 ) {
 	if (action == GLFW_PRESS) {
+		if (key == GLFW_KEY_W) {
+			speed_z = 2 * PI;
+		}
+		if (key == GLFW_KEY_S) {
+			speed_z = -2 * PI;
+		}
 		if (key == GLFW_KEY_A) {
-			if (camera_set == 0) camera_set = 3; else camera_set--;
+			if (camera_set == 0) camera_set = 3; else camera_set--; setCamera();
+
 		}
 		if (key == GLFW_KEY_D) {
-			if (camera_set > 2) camera_set = 0; else camera_set++;
+			if (camera_set > 2) camera_set = 0; else camera_set++; setCamera();
 		}
 		if (key == GLFW_KEY_R) {
-			camera_set = 1;
+			camera_set = 1; setCamera();
 			
 		}
 		if (key == GLFW_KEY_M) {
@@ -266,7 +273,12 @@ void key_callback(
 		}
 	}
 	if (action == GLFW_RELEASE) {
-		
+		if (key == GLFW_KEY_W) {
+			speed_z = 0;
+		}
+		if (key == GLFW_KEY_S) {
+			speed_z = 0;
+		}
 	}
 }
 
@@ -518,7 +530,8 @@ int main(void)
 	glfwSetTime(0); //Wyzeruj licznik czasu
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
-		setCamera();
+		//setCamera();
+		camera_z += speed_z * glfwGetTime();
 		glfwSetTime(0); //Wyzeruj licznik czasu
 		drawScene(window); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
