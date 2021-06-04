@@ -19,6 +19,11 @@
 #include "models/myCube.h"
 #include "models/myTeapot.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+
 using namespace std;
 
 
@@ -46,7 +51,24 @@ ShaderProgram* sp;
 
 //uchwyty tekstur
 GLuint walls_tex;
-GLuint floor_tex; 
+GLuint floor_tex;
+GLuint table_tex;
+GLuint chair_tex;
+
+//assimp - wczytywanie modeli
+vector<glm::vec4>verts;
+vector<glm::vec4>norms;
+vector<glm::vec2>texCoords;
+vector<unsigned int> indices;
+
+//assimp - wczytywanie modeli
+vector<glm::vec4>verts2;
+vector<glm::vec4>norms2;
+vector<glm::vec2>texCoords2;
+vector<unsigned int> indices2;
+
+
+
 
 //Procedura obsługi błędów
 void error_callback(int error, const char* description) {
@@ -69,6 +91,7 @@ void list_dir(const char* path) {
 	}
 	closedir(dir);
 }
+
 
 //Wczytywanie tekstury
 GLuint readTexture(const char* filename) {
@@ -183,34 +206,6 @@ void changeWallsTexture() {
 	info();
 }
 
-void drawObject(float* vertices, float* colors, float* normals, float* texCoords, int vertexCount, const char* texture = "textures/walls/bricks.png") {
-	//GLuint tex = readTexture(texture);
-	glm::mat4 M3 = glm::mat4(1.0f); // Rysowanie ścian
-	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M3));
-	glEnableVertexAttribArray(sp->a("vertex"));
-	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, vertices);
-
-	glEnableVertexAttribArray(sp->a("color"));
-	glVertexAttribPointer(sp->a("color"), 4, GL_FLOAT, false, 0, colors);
-
-	glEnableVertexAttribArray(sp->a("normal"));
-	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, normals);
-
-	glEnableVertexAttribArray(sp->a("texCoord0"));
-	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, texCoords);
-
-	glUniform1i(sp->u("textureMap0"), 2);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, walls_tex);
-
-
-	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-
-	glDisableVertexAttribArray(sp->a("vertex"));
-	glDisableVertexAttribArray(sp->a("color"));
-	glDisableVertexAttribArray(sp->a("normal"));
-	glDisableVertexAttribArray(sp->a("texCoord0"));
-}
 
 // Menu uzytkownika
 void menu() {
@@ -282,6 +277,35 @@ void windowResizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
+void loadModel(string plik, vector<glm::vec4> &v, vector<glm::vec4> &n, vector<glm::vec2> &t, vector<unsigned int> &ind) {
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(plik, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals);
+	cout << importer.GetErrorString() << endl;
+
+	aiMesh* mesh = scene->mMeshes[0];
+
+	for (int i = 0; i < mesh->mNumVertices; i++) {
+		aiVector3D vertex = mesh->mVertices[i];
+		v.push_back(glm::vec4(vertex.x, vertex.y, vertex.z, 1));
+
+		aiVector3D normal = mesh->mNormals[i];
+		n.push_back(glm::vec4(normal.x, normal.y, normal.z, 0));
+
+		aiVector3D texCoord = mesh->mTextureCoords[0][i];
+		t.push_back(glm::vec2(texCoord.x, texCoord.y));
+	}
+
+	for (int i = 0; i < mesh->mNumFaces; i++) {
+		aiFace& face = mesh->mFaces[i];
+
+		for (int j = 0; j < face.mNumIndices; j++) {
+			ind.push_back(face.mIndices[j]);
+		}
+	}
+
+	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+}
+
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
     //initShaders();
@@ -293,8 +317,15 @@ void initOpenGLProgram(GLFWwindow* window) {
 	sp = new ShaderProgram("v_simplest.glsl", NULL, "f_simplest.glsl");
 	walls_tex = readTexture("textures/walls/light_bricks.png");  // wczytanie domyslnej tekstury ściany
 	floor_tex = readTexture("textures/floor/light_wood.png"); // wczytanie domyslnej tekstury podłogi
+	table_tex = readTexture("textures/dark_wood.png"); // wczytanie domyslnej tekstury sofy
+	chair_tex = readTexture("textures/chair_tex.png"); // wczytanie domyslnej tekstury sofy
 	cout << "\n************** Witaj w dekoratorze wnetrz! **************" << endl;
 	info();
+
+	//wczytywanie modeli
+	loadModel(string("models/table.fbx"), verts, norms, texCoords, indices);
+	loadModel(string("models/Chair.obj"), verts2, norms2, texCoords2, indices2);
+	
 }
 
 //Zwolnienie zasobów zajętych przez program
@@ -303,6 +334,8 @@ void freeOpenGLProgram(GLFWwindow* window) {
     //************Tutaj umieszczaj kod, który należy wykonać po zakończeniu pętli głównej************
 	glDeleteTextures(1, &walls_tex);
 	glDeleteTextures(1, &floor_tex);
+	glDeleteTextures(1, &table_tex);
+	glDeleteTextures(1, &chair_tex);
 	delete sp;
 }
 
@@ -347,8 +380,6 @@ void drawScene(GLFWwindow* window) {
 	glDisableVertexAttribArray(sp->a("normal"));
 	glDisableVertexAttribArray(sp->a("texCoord0"));
 
-	//myFloorVertices, myFloorTexCoords, myFloorVertexNormals
-
 
 	glm::mat4 M2 = M; // Rysowanie podłogi
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M2));
@@ -368,16 +399,86 @@ void drawScene(GLFWwindow* window) {
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, floor_tex);
 	
-
 	glDrawArrays(GL_TRIANGLES, 0, myRoomVertexCount);
-
 
 	glDisableVertexAttribArray(sp->a("vertex"));
 	glDisableVertexAttribArray(sp->a("color"));
 	glDisableVertexAttribArray(sp->a("normal"));
 	glDisableVertexAttribArray(sp->a("texCoord0"));
 
-	drawObject(myTeapotVertices, myTeapotColors, myTeapotNormals, myTeapotTexCoords, myTeapotVertexCount); //rysuj czajnik
+
+	glm::mat4 M3 = M; // Rysowanie krzesła
+	M3 = glm::translate(M3, glm::vec3(-3.0f, -1.0f, 0.0f));
+	//M3 = glm::rotate(M3, glm::radians(-90.0f), glm::vec3(3.0f, 0.0f, 0.0f));
+	M3 = glm::scale(M3, glm::vec3(0.06f, 0.06f, 0.06f));
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M3));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, verts2.data());
+
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, norms2.data());
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, texCoords2.data());
+
+	glUniform1i(sp->u("textureMap0"), 2);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, chair_tex);
+
+	glDrawElements(GL_TRIANGLES, indices2.size(), GL_UNSIGNED_INT, indices2.data());
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+
+	
+	glm::mat4 M4 = M; // Rysowanie kostki
+	M4 = glm::translate(M4, glm::vec3(-5.0f, 0.0f, 0.0f));
+	M4 = glm::rotate(M4, glm::radians(-90.0f), glm::vec3(3.0f, 0.0f, 0.0f));
+	M4 = glm::scale(M4, glm::vec3(1.0f, 1.0f, 1.0f));
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M4));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, myCubeVertices);
+
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, myCubeNormals);
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, myCubeTexCoords);
+
+	glUniform1i(sp->u("textureMap0"), 3);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, table_tex);
+
+	glDrawArrays(GL_TRIANGLES, 0, myCubeVertexCount);
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+
+	glm::mat4 M5 = M; // Rysowanie stolika
+	M5 = glm::translate(M5, glm::vec3(0.0f, -1.0f, 0.0f));
+	M5 = glm::rotate(M5, glm::radians(-90.0f), glm::vec3(3.0f, 0.0f, 0.0f));
+	M5 = glm::scale(M5, glm::vec3(2.0f, 2.0f, 2.0f));
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M5));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, verts.data());
+
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, norms.data());
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, texCoords.data());
+
+	glUniform1i(sp->u("textureMap0"), 4);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, table_tex);
+
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data());
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
 
 
 	glfwSwapBuffers(window); //Skopiuj bufor tylny do bufora przedniego
@@ -394,7 +495,7 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	window = glfwCreateWindow(500, 500, "OpenGL", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
+	window = glfwCreateWindow(1000, 1000, "OpenGL", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
 
 	if (!window) //Jeżeli okna nie udało się utworzyć, to zamknij program
 	{
