@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="constants.h" />
     <ClInclude Include="lodepng.h" />
+    <ClInclude Include="Mebel.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="models\myCube.h" />
     <ClInclude Include="models\myTeapot.h" />

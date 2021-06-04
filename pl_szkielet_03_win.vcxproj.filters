@@ -42,6 +42,9 @@
     <ClInclude Include="models\myTeapot.h">
       <Filter>Models</Filter>
     </ClInclude>
+    <ClInclude Include="Mebel.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lodepng.cpp">
