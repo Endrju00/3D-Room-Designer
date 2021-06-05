@@ -55,6 +55,7 @@ GLuint walls_tex;
 GLuint floor_tex;
 GLuint table_tex;
 GLuint chair_tex;
+GLuint armchair_tex;
 GLuint soundbar_tex;
 
 //assimp - wczytywanie modeli
@@ -71,6 +72,8 @@ vector<unsigned int> indices2;
 
 Mebel chair;
 Mebel table;
+Mebel armchair;
+Mebel cupboard;
 
 
 //Procedura obsługi błędów
@@ -348,6 +351,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	floor_tex = readTexture("textures/floor/light_wood.png"); // wczytanie domyslnej tekstury podłogi
 	table_tex = readTexture("textures/dark_wood.png"); // wczytanie domyslnej tekstury sofy
 	chair_tex = readTexture("textures/chair_tex.png"); // wczytanie domyslnej tekstury sofy
+	armchair_tex = readTexture("textures/armchair_tex3.png");
 	soundbar_tex = readTexture("textures/soundbar.png");
 	cout << "\n************** Witaj w dekoratorze wnetrz! **************" << endl;
 	info();
@@ -369,6 +373,22 @@ void initOpenGLProgram(GLFWwindow* window) {
 	table.M = glm::translate(table.M, glm::vec3(0.0f, -2.0f, 3.1f));
 	table.M = glm::rotate(table.M, glm::radians(-90.0f), glm::vec3(3.0f, 0.0f, 0.0f));
 	table.M = glm::scale(table.M, glm::vec3(5.0f, 5.0f, 5.0f));
+
+	//Ustawienie fotela
+	armchair = Mebel("models/armchair.obj", M, 50.0);
+	armchair.M = M;
+	armchair.M = glm::translate(armchair.M, glm::vec3(3.5f, -2.0f, 3.3f));
+	armchair.M = glm::rotate(armchair.M, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	//armchair.M = glm::rotate(armchair.M, glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	armchair.M = glm::rotate(armchair.M, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	armchair.M = glm::scale(armchair.M, glm::vec3(0.007f, 0.007f, 0.007f));
+
+	//Ustawienie szafki
+	cupboard = Mebel("models/szuflada.obj", M, 50.0);
+	cupboard.M = M;
+	cupboard.M = glm::translate(cupboard.M, glm::vec3(-7.0f, -1.0f, -2.0f));
+	cupboard.M = glm::rotate(cupboard.M, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	cupboard.M = glm::scale(cupboard.M, glm::vec3(3.0f, 3.0f, 3.0f));
 }
 
 //Zwolnienie zasobów zajętych przez program
@@ -379,6 +399,7 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	glDeleteTextures(1, &floor_tex);
 	glDeleteTextures(1, &table_tex);
 	glDeleteTextures(1, &chair_tex);
+	glDeleteTextures(1, &armchair_tex);
 	delete sp;
 }
 
@@ -539,6 +560,49 @@ void drawScene(GLFWwindow* window) {
 	glBindTexture(GL_TEXTURE_2D, table_tex);
 
 	glDrawElements(GL_TRIANGLES, table.indices.size(), GL_UNSIGNED_INT, table.indices.data());
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+
+
+	//Rysowanie fotela
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(armchair.M));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, armchair.verts.data());
+
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, armchair.norms.data());
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, armchair.texCoords.data());
+
+	glUniform1i(sp->u("textureMap0"), 4);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, armchair_tex);
+
+	glDrawElements(GL_TRIANGLES, armchair.indices.size(), GL_UNSIGNED_INT, armchair.indices.data());
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+
+
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(cupboard.M));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, cupboard.verts.data());
+
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, cupboard.norms.data());
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, cupboard.texCoords.data());
+
+	glUniform1i(sp->u("textureMap0"), 5);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, table_tex);
+
+	glDrawElements(GL_TRIANGLES, cupboard.indices.size(), GL_UNSIGNED_INT, cupboard.indices.data());
 
 	glDisableVertexAttribArray(sp->a("vertex"));
 	glDisableVertexAttribArray(sp->a("normal"));
