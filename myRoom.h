@@ -2,7 +2,7 @@
 #define MYROOM_H_INCLUDED
 
 int myRoomVertexCount = 24;
-float length = 8, width = 5, height = 2;
+float length = 9, width = 5, height = 3;
 
 
 float myRoomVertices[] = {
