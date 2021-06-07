@@ -7,6 +7,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
+#include "shaderprogram.h"
 using namespace std;
 
 class Mebel {
@@ -72,5 +74,35 @@ public:
 	}
 	void moveBackward() {
 		M = glm::translate(M, glm::vec3(0.0f, 0.0f, 1.0f/factor));
+	}
+
+	void set(glm::mat4 matrix, glm::vec3 t, glm::vec3 s, glm::vec3 r=glm::vec3(1.0f, 0.0f, 0.0f), float angle=0.0f) {
+		M = matrix;
+		M = glm::translate(M, t);
+		M = glm::rotate(M, glm::radians(angle), r);
+		M = glm::scale(M, s);
+	}
+
+	void draw(int index, int gl_texture, GLuint tex, ShaderProgram* sp) {
+		sp->use();
+		glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M));
+		glEnableVertexAttribArray(sp->a("vertex"));
+		glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, verts.data());
+
+		glEnableVertexAttribArray(sp->a("normal"));
+		glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, norms.data());
+
+		glEnableVertexAttribArray(sp->a("texCoord0"));
+		glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, texCoords.data());
+
+		glUniform1i(sp->u("textureMap0"), index);
+		glActiveTexture(gl_texture);
+		glBindTexture(GL_TEXTURE_2D, tex);
+
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data());
+
+		glDisableVertexAttribArray(sp->a("vertex"));
+		glDisableVertexAttribArray(sp->a("normal"));
+		glDisableVertexAttribArray(sp->a("texCoord0"));
 	}
 };

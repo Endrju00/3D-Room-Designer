@@ -372,5 +372,58 @@ float myFloorVertexNormals[] = {
 	-1.0f,1.0f, -1.0f,0.0f,
 };
 
+void drawWalls(glm::mat4 matrix, int index, int gl_texture, GLuint tex, ShaderProgram* sp) {
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(matrix));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, myRoomVertices);
+
+	glEnableVertexAttribArray(sp->a("color"));
+	glVertexAttribPointer(sp->a("color"), 4, GL_FLOAT, false, 0, myRoomColors);
+
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, myWallsVertexNormals);
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, myRoomTexCoords);
+
+	glUniform1i(sp->u("textureMap0"), index);
+	glActiveTexture(gl_texture);
+	glBindTexture(GL_TEXTURE_2D, tex);
+
+
+	glDrawArrays(GL_TRIANGLES, 0, myRoomVertexCount);
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("color"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+};
+
+void drawFloor(glm::mat4 matrix, int index, int gl_texture, GLuint tex, ShaderProgram* sp) {
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(matrix));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, myFloorVertices);
+
+	glEnableVertexAttribArray(sp->a("color"));
+	glVertexAttribPointer(sp->a("color"), 4, GL_FLOAT, false, 0, myRoomColors);
+
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, myFloorVertexNormals);
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, myRoomTexCoords);
+
+	glUniform1i(sp->u("textureMap0"), index);
+	glActiveTexture(gl_texture);
+	glBindTexture(GL_TEXTURE_2D, tex);
+
+	glDrawArrays(GL_TRIANGLES, 0, myRoomVertexCount);
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("color"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+};
+
 #endif // MYCUBE_H_INCLUDED
 
