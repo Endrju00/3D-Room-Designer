@@ -59,10 +59,15 @@ public:
 
 	Mebel() {}
 	
-	void rotateModel() {
+	void rotateModelX() {
+		M = glm::rotate(M, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	}
+	void rotateModelY() {
 		M = glm::rotate(M, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	}
-
+	void rotateModelZ() {
+		M = glm::rotate(M, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	}
 	void moveLeft() {
 		M = glm::translate(M, glm::vec3(-1.0f/factor, 0.0f, 0.0f));
 	}
@@ -74,6 +79,12 @@ public:
 	}
 	void moveBackward() {
 		M = glm::translate(M, glm::vec3(0.0f, 0.0f, 1.0f/factor));
+	}
+	void moveUp() {
+		M = glm::translate(M, glm::vec3(0.0f, 1.0f / factor, 0.0f));
+	}
+	void moveDown() {
+		M = glm::translate(M, glm::vec3(0.0f, -1.0f / factor, 0.0f));
 	}
 
 	void set(glm::mat4 matrix, glm::vec3 t, glm::vec3 s, glm::vec3 r=glm::vec3(1.0f, 0.0f, 0.0f), float angle=0.0f) {

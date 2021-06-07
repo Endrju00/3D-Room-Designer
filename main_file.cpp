@@ -57,6 +57,11 @@ GLuint chair_tex;
 GLuint armchair_tex;
 GLuint soundbar_tex;
 GLuint carpet_tex;
+GLuint vase_tex;
+GLuint lamp_tex;
+GLuint bed_tex;
+GLuint cupboard_tex;
+
 
 //assimp - wczytywanie modeli
 vector<glm::vec4>verts;
@@ -80,6 +85,9 @@ Mebel lamp;
 Mebel lamp2;
 Mebel carpet;
 
+//Wskazniki na meble
+vector<Mebel *> meble = { &chair, &table, &armchair, &cupboard, &bed, &vase, &carpet };
+int p = 0;
 
 //Procedura obsługi błędów
 void error_callback(int error, const char* description) {
@@ -130,11 +138,12 @@ GLuint readTexture(const char* filename) {
 
 // informacja odnosnie sterowania
 void info() {
-
 	cout << "\n--> Aby wyswietlic menu - uzyj klawisza M." << endl;						
-	cout << "--> Aby obracac pokojem - uzyj strzalek." << endl;
-	cout << "--> Aby przyblizac/oddalac kamere - uzyj odpowiednio klawiszy W oraz S." << endl;
+	cout << "--> Aby zmieniac pozycje kamery - uzyj strzalek." << endl;
 	cout << "--> Aby zresetowac pozycje kamery - uzyj klawisza R." << endl;
+	cout << "--> Aby przesunac mebel - uzyj klawiszy W, S, A, D, Q oraz E." << endl;
+	cout << "--> Aby obracac meblem względem osi X, Y, Z - uzyj klawiszy I, O oraz P." << endl;
+	cout << "--> Aby zmienic przesuwany mebel - uzyj klawisza Tab." << endl;
 	cout << "\n!!! Podpowiedz: uzywaj powyzszych klawiszy w oknie OpenGL. !!!" << endl;
 }
 
@@ -224,8 +233,7 @@ void menu() {
 	cout << "1. Zmien wyglad podlogi." << endl;
 	cout << "2. Zmien wyglad scian." << endl;
 	cout << "3. Zmien wyglad calego pomieszczenia." << endl;
-	cout << "4. Dodaj obiekt." << endl;
-	cout << "5. Anuluj." << endl;
+	cout << "4. Anuluj." << endl;
 
 	int num;
 	cout << "Wprowadz numer: ";
@@ -239,8 +247,6 @@ void menu() {
 	case 3:
 		changeRoomTexture(); break;
 	case 4:
-		cout << "Funkcja niedostepna." << endl; break;
-	case 5:
 		info(); break;
 	default:
 		cout << "Bledna opcja :(" << endl;
@@ -262,16 +268,16 @@ void key_callback(
 	int mod
 ) {
 	if (action == GLFW_PRESS) {
-		if (key == GLFW_KEY_W) {
+		if (key == GLFW_KEY_UP) {
 			speed_z = 2 * PI;
 		}
-		if (key == GLFW_KEY_S) {
+		if (key == GLFW_KEY_DOWN) {
 			speed_z = -2 * PI;
 		}
-		if (key == GLFW_KEY_A) {
+		if (key == GLFW_KEY_LEFT) {
 			if (camera_set == 0) camera_set = 3; else camera_set--; setCamera();
 		}
-		if (key == GLFW_KEY_D) {
+		if (key == GLFW_KEY_RIGHT) {
 			if (camera_set > 2) camera_set = 0; else camera_set++; setCamera();
 		}
 		if (key == GLFW_KEY_R) {
@@ -280,28 +286,44 @@ void key_callback(
 		if (key == GLFW_KEY_M) {
 			menu();
 		}
+		if (key == GLFW_KEY_I) {
+			(*meble[p]).rotateModelX();
+		}
+		if (key == GLFW_KEY_O) {
+			(*meble[p]).rotateModelY();
+		}
 		if (key == GLFW_KEY_P) {
-			table.rotateModel();
+			(*meble[p]).rotateModelZ();
 		}
-		if (key == GLFW_KEY_RIGHT) {
-			table.moveRight();
+		if (key == GLFW_KEY_D) {
+			(*meble[p]).moveRight();
 		}
-		if (key == GLFW_KEY_LEFT) {
-			table.moveLeft();
+		if (key == GLFW_KEY_A) {
+			(*meble[p]).moveLeft();
 		}
-		if (key == GLFW_KEY_UP) {
-			table.moveForward();
+		if (key == GLFW_KEY_W) {
+			(*meble[p]).moveForward();
 		}
-		if (key == GLFW_KEY_DOWN) {
-			table.moveBackward();
+		if (key == GLFW_KEY_S) {
+			(*meble[p]).moveBackward();
+		}
+		if (key == GLFW_KEY_Q) {
+			(*meble[p]).moveUp();
+		}
+		if (key == GLFW_KEY_E) {
+			(*meble[p]).moveDown();
+		}
+		if (key == GLFW_KEY_TAB) {
+			if (p + 1 != meble.size()) p++;
+			else p = 0;
 		}
 
 	}
 	if (action == GLFW_RELEASE) {
-		if (key == GLFW_KEY_W) {
+		if (key == GLFW_KEY_UP) {
 			speed_z = 0;
 		}
-		if (key == GLFW_KEY_S) {
+		if (key == GLFW_KEY_DOWN) {
 			speed_z = 0;
 		}
 	}
@@ -355,15 +377,15 @@ void initOpenGLProgram(GLFWwindow* window) {
 	sp = new ShaderProgram("v_simplest.glsl", NULL, "f_simplest.glsl");
 	walls_tex = readTexture("textures/walls/light_bricks.png");					// wczytanie domyslnych tekstur
 	floor_tex = readTexture("textures/floor/light_wood.png"); 
-	table_tex = readTexture("textures/dark_wood1.png"); 
+	table_tex = readTexture("textures/floor/dark_wood.png"); 
+	bed_tex = readTexture("textures/dark_wood1.png");
+	cupboard_tex = readTexture("textures/floor/dark_wood.png");
 	chair_tex = readTexture("textures/chair_tex.png"); 
 	armchair_tex = readTexture("textures/sofa_tex.png");
 	soundbar_tex = readTexture("textures/soundbar.png");
 	carpet_tex = readTexture("textures/zebra.png");
-
-	//Wyswietl informacje w konsoli
-	cout << "\n************** Witaj w dekoratorze wnetrz! **************" << endl;
-	info();
+	vase_tex = readTexture("textures/bronze.png");
+	lamp_tex = readTexture("textures/gold.png");
 	
 	//Macierz jednostkowa
 	glm::mat4 M = glm::mat4(1.0f);
@@ -382,7 +404,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	table.set(M, glm::vec3(-2.5f, -3.0f, 3.1f), glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(1.0f, 0.0f, 0.0f), -90.0f);
 
 	//Ustawienie fotela
-	armchair = Mebel("models/armchair.obj", M, 50.0);
+	armchair = Mebel("models/armchair.obj", M, 0.05);
 	armchair.M = M;
 	armchair.M = glm::translate(armchair.M, glm::vec3(1.0f, -3.0f, 3.3f));
 	armchair.M = glm::rotate(armchair.M, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -394,11 +416,11 @@ void initOpenGLProgram(GLFWwindow* window) {
 	cupboard.set(M, glm::vec3(-8.0f, -2.0f, -2.0f), glm::vec3(4.0f, 4.0f, 4.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f);
 
 	//Ustawienie lozka
-	bed = Mebel("models/sofa.obj", M, 50.0);
+	bed = Mebel("models/sofa.obj", M, 0.05);
 	bed.set(M, glm::vec3(7.0f, -3.0f, 1.0f), glm::vec3(0.007f, 0.007f, 0.007f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f);
 
 	//Ustawienie wazy
-	vase = Mebel("models/vase.obj", M, 50.0);
+	vase = Mebel("models/vase.obj", M, 0.2);
 	vase.set(M, glm::vec3(8.0f, -3.0f, -4.0f), glm::vec3(0.025f, 0.025f, 0.025f));
 
 	//Ustawienie lampy1
@@ -410,8 +432,12 @@ void initOpenGLProgram(GLFWwindow* window) {
 	lamp2.set(M, glm::vec3(-3.0f, 3.0f, 0.0f), glm::vec3(0.003f, 0.003f, 0.003f));
 
 	//Ustawienie dywanu
-	carpet = Mebel("models/carpet1.3ds", M, 50.0);
+	carpet = Mebel("models/carpet1.3ds", M, 0.05);
 	carpet.set(M, glm::vec3(1.0f, -3.0f, -0.5f), glm::vec3(0.01f, 0.01f, 0.01f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f);
+
+	//Wyswietl informacje w konsoli
+	cout << "\n************** Witaj w dekoratorze wnetrz! **************" << endl;
+	info();
 }
 
 //Zwolnienie zasobów zajętych przez program
@@ -451,12 +477,12 @@ void drawScene(GLFWwindow* window) {
 	chair.draw(2, GL_TEXTURE2, chair_tex, sp);
 	table.draw(3, GL_TEXTURE3, table_tex, sp);
 	armchair.draw(4, GL_TEXTURE4, armchair_tex, sp);
-	cupboard.draw(5, GL_TEXTURE5, table_tex, sp);
-	bed.draw(6, GL_TEXTURE6, table_tex, sp);
-	vase.draw(7, GL_TEXTURE7, table_tex, sp);
-	lamp.draw(8, GL_TEXTURE8, table_tex, sp);
-	lamp2.draw(10, GL_TEXTURE9, table_tex, sp);
-	carpet.draw(11, GL_TEXTURE11, carpet_tex, sp);
+	cupboard.draw(5, GL_TEXTURE5, cupboard_tex, sp);
+	bed.draw(6, GL_TEXTURE6, bed_tex, sp);
+	vase.draw(7, GL_TEXTURE7, vase_tex, sp);
+	lamp.draw(8, GL_TEXTURE8, lamp_tex, sp);
+	lamp2.draw(9, GL_TEXTURE9, lamp_tex, sp);
+	carpet.draw(10, GL_TEXTURE10, carpet_tex, sp);
 
 	//Rysowanie kostki (głosnika)
 	glm::mat4 M4 = M; 
@@ -474,8 +500,8 @@ void drawScene(GLFWwindow* window) {
 	glEnableVertexAttribArray(sp->a("texCoord0"));
 	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, myCubeTexCoords);
 
-	glUniform1i(sp->u("textureMap0"), 12);
-	glActiveTexture(GL_TEXTURE12);
+	glUniform1i(sp->u("textureMap0"), 11);
+	glActiveTexture(GL_TEXTURE11);
 	glBindTexture(GL_TEXTURE_2D, soundbar_tex);
 
 	glDrawArrays(GL_TRIANGLES, 0, myCubeVertexCount);
@@ -499,8 +525,8 @@ void drawScene(GLFWwindow* window) {
 	glEnableVertexAttribArray(sp->a("texCoord0"));
 	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, myTeapotTexCoords);
 
-	glUniform1i(sp->u("textureMap0"), 4);
-	glActiveTexture(GL_TEXTURE4);
+	glUniform1i(sp->u("textureMap0"), 12);
+	glActiveTexture(GL_TEXTURE12);
 	glBindTexture(GL_TEXTURE_2D, walls_tex);
 
 	glDrawArrays(GL_TRIANGLES, 0, myTeapotVertexCount);
