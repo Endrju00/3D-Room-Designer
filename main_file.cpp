@@ -42,6 +42,12 @@ float camera_coords[4][3] = {
 	{0.0f, 20.0f, -1.0f}
 };
 
+//wspolrzedne swiatła
+float l_x1 = 70;
+float l_x2 = -70;
+float l_y = 30;
+
+
 float camera_x = camera_coords[camera_set][0];
 float camera_y = camera_coords[camera_set][1];
 float camera_z = camera_coords[camera_set][2];
@@ -295,6 +301,22 @@ void key_callback(
 		if (key == GLFW_KEY_P) {
 			(*meble[p]).rotateModelZ();
 		}
+		if (key == GLFW_KEY_J) {
+			l_x1 += 10;
+			cout << "1: " << l_x1 << " 2: " << l_x2 << endl;
+		}
+		if (key == GLFW_KEY_K) {
+			l_x2 -= 10;
+			cout << "1: " << l_x1 << " 2: " << l_x2 << endl;
+		}
+		if (key == GLFW_KEY_Z) {
+			l_y += 10;
+			cout << "y: " << l_y << endl;
+		}
+		if (key == GLFW_KEY_X) {
+			l_y -= 10;
+			cout << "y: " << l_y << endl;
+		}
 		if (key == GLFW_KEY_D) {
 			(*meble[p]).moveRight();
 		}
@@ -425,11 +447,11 @@ void initOpenGLProgram(GLFWwindow* window) {
 
 	//Ustawienie lampy1
 	lamp = Mebel("models/lamp1.obj", M, 50.0);
-	lamp.set(M, glm::vec3(3.0f, 3.0f, 0.0f), glm::vec3(0.003f, 0.003f, 0.003f));
+	lamp.set(M, glm::vec3(5.0f, 3.0f, 0.0f), glm::vec3(0.003f, 0.003f, 0.003f));
 	
 	//Ustawienie lampy2
 	lamp2 = Mebel("models/lamp1.obj", M, 50.0);
-	lamp2.set(M, glm::vec3(-3.0f, 3.0f, 0.0f), glm::vec3(0.003f, 0.003f, 0.003f));
+	lamp2.set(M, glm::vec3(-5.0f, 3.0f, 0.0f), glm::vec3(0.003f, 0.003f, 0.003f));
 
 	//Ustawienie dywanu
 	carpet = Mebel("models/carpet1.3ds", M, 0.05);
@@ -464,6 +486,11 @@ void drawScene(GLFWwindow* window) {
 	sp->use();
 	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
 	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M));
+
+	//Przekazanie zmiennej reprezentującej wspołrzędne źródła światła 1 i 2
+	glUniform4f(sp->u("lp1"), l_x1, l_y, 0, 1);
+	glUniform4f(sp->u("lp2"), l_x2, l_y, 0, 1);
 
 	//Rysowanie ścian
 	glm::mat4 M1 = M; 
