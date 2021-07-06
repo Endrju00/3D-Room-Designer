@@ -36,9 +36,9 @@ float aspectRatio = 1;
 //pozycja kamery
 int camera_set = 1;
 float camera_coords[4][3] = {
-	{20.0f, 10.0f, -8.0f},
+	{12.5f, 10.0f, 0.0f},
 	{0.0f, 10.0f, -20.0f},
-	{-20.0f, 10.0f, -8.0f},
+	{-12.5f, 10.0f, 0.0f},
 	{0.0f, 20.0f, -1.0f}
 };
 
@@ -277,9 +277,11 @@ void key_callback(
 	if (action == GLFW_PRESS) {
 		if (key == GLFW_KEY_UP) {
 			speed_z = 2 * PI;
+			cout << "X: " << camera_x << "Y: " << camera_y << "Z: " << camera_z << endl;
 		}
 		if (key == GLFW_KEY_DOWN) {
 			speed_z = -2 * PI;
+			cout << "X: " << camera_x << "Y: " << camera_y << "Z: " << camera_z << endl;
 		}
 		if (key == GLFW_KEY_LEFT) {
 			if (camera_set == 0) camera_set = 3; else camera_set--; setCamera();
