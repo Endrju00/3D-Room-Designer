@@ -61,7 +61,8 @@ GLuint floor_tex;
 GLuint table_tex;
 GLuint chair_tex;
 GLuint armchair_tex;
-GLuint soundbar_tex;
+GLuint soundbar1_tex;
+GLuint soundbar2_tex;
 GLuint carpet_tex;
 GLuint vase_tex;
 GLuint lamp_tex;
@@ -277,11 +278,9 @@ void key_callback(
 	if (action == GLFW_PRESS) {
 		if (key == GLFW_KEY_UP) {
 			speed_z = 2 * PI;
-			cout << "X: " << camera_x << "Y: " << camera_y << "Z: " << camera_z << endl;
 		}
 		if (key == GLFW_KEY_DOWN) {
 			speed_z = -2 * PI;
-			cout << "X: " << camera_x << "Y: " << camera_y << "Z: " << camera_z << endl;
 		}
 		if (key == GLFW_KEY_LEFT) {
 			if (camera_set == 0) camera_set = 3; else camera_set--; setCamera();
@@ -407,7 +406,8 @@ void initOpenGLProgram(GLFWwindow* window) {
 	cupboard_tex = readTexture("textures/wood1.png");
 	chair_tex = readTexture("textures/chair_tex.png"); 
 	armchair_tex = readTexture("textures/material1.png");
-	soundbar_tex = readTexture("textures/soundbar.png");
+	soundbar1_tex = readTexture("textures/soundbar1.png");
+	soundbar2_tex = readTexture("textures/soundbar2.png");
 	carpet_tex = readTexture("textures/zebra.png");
 	vase_tex = readTexture("textures/metal1.png");
 	lamp_tex = readTexture("textures/metal1.png");
@@ -473,7 +473,8 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	glDeleteTextures(1, &table_tex);
 	glDeleteTextures(1, &chair_tex);
 	glDeleteTextures(1, &armchair_tex);
-	glDeleteTextures(1, &soundbar_tex);
+	glDeleteTextures(1, &soundbar1_tex);
+	glDeleteTextures(1, &soundbar2_tex);
 	glDeleteTextures(1, &carpet_tex);
 	delete sp;
 }
@@ -515,12 +516,13 @@ void drawScene(GLFWwindow* window) {
 	lamp2.draw(9, GL_TEXTURE9, lamp_tex, sp);
 	carpet.draw(10, GL_TEXTURE10, carpet_tex, sp);
 
-	//Rysowanie kostki (głosnika)
+	//Rysowanie głosnika
+	//podstawa
 	glm::mat4 M4 = M; 
-	M4 = glm::translate(M4, glm::vec3(-7.6f, -1.0f, 3.8f));
+	M4 = glm::translate(M4, glm::vec3(-7.6f, -2.25f, 3.8f));
 	M4 = glm::rotate(M4, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	M4 = glm::rotate(M4, glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	M4 = glm::scale(M4, glm::vec3(0.75f, 0.75f, 2.0f));
+	M4 = glm::scale(M4, glm::vec3(0.75f, 0.75f, 0.75f));
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M4));
 	glEnableVertexAttribArray(sp->a("vertex"));
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, myCubeVertices);
@@ -533,7 +535,55 @@ void drawScene(GLFWwindow* window) {
 
 	glUniform1i(sp->u("textureMap0"), 11);
 	glActiveTexture(GL_TEXTURE11);
-	glBindTexture(GL_TEXTURE_2D, soundbar_tex);
+	glBindTexture(GL_TEXTURE_2D, soundbar2_tex);
+
+	glDrawArrays(GL_TRIANGLES, 0, myCubeVertexCount);
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+
+	//druga czesc
+	glm::mat4 M5 = M4;
+	M5 = glm::translate(M5, glm::vec3(0.0f, 0.0f, 2.0f));
+	
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M5));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, myCubeVertices);
+
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, myCubeNormals);
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, myCubeTexCoords);
+
+	glUniform1i(sp->u("textureMap0"), 13);
+	glActiveTexture(GL_TEXTURE13);
+	glBindTexture(GL_TEXTURE_2D, soundbar2_tex);
+
+	glDrawArrays(GL_TRIANGLES, 0, myCubeVertexCount);
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("normal"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+
+	//trzecia czesc
+	glm::mat4 M7 = M5;
+	M7 = glm::translate(M7, glm::vec3(0.0f, 0.0f, 2.0f));
+
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M7));
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, myCubeVertices);
+
+	glEnableVertexAttribArray(sp->a("normal"));
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, myCubeNormals);
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, myCubeTexCoords);
+
+	glUniform1i(sp->u("textureMap0"), 14);
+	glActiveTexture(GL_TEXTURE14);
+	glBindTexture(GL_TEXTURE_2D, soundbar1_tex);
 
 	glDrawArrays(GL_TRIANGLES, 0, myCubeVertexCount);
 
