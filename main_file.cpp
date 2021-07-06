@@ -67,6 +67,7 @@ GLuint vase_tex;
 GLuint lamp_tex;
 GLuint bed_tex;
 GLuint cupboard_tex;
+GLuint teapot_tex;
 
 
 //assimp - wczytywanie modeli
@@ -399,15 +400,16 @@ void initOpenGLProgram(GLFWwindow* window) {
 	sp = new ShaderProgram("v_simplest.glsl", NULL, "f_simplest.glsl");
 	walls_tex = readTexture("textures/walls/light_bricks.png");					// wczytanie domyslnych tekstur
 	floor_tex = readTexture("textures/floor/light_wood.png"); 
-	table_tex = readTexture("textures/floor/dark_wood.png"); 
-	bed_tex = readTexture("textures/dark_wood1.png");
-	cupboard_tex = readTexture("textures/floor/dark_wood.png");
+	table_tex = readTexture("textures/wood.png"); 
+	bed_tex = readTexture("textures/material.png");
+	cupboard_tex = readTexture("textures/wood1.png");
 	chair_tex = readTexture("textures/chair_tex.png"); 
-	armchair_tex = readTexture("textures/sofa_tex.png");
+	armchair_tex = readTexture("textures/material1.png");
 	soundbar_tex = readTexture("textures/soundbar.png");
 	carpet_tex = readTexture("textures/zebra.png");
-	vase_tex = readTexture("textures/bronze.png");
-	lamp_tex = readTexture("textures/gold.png");
+	vase_tex = readTexture("textures/metal1.png");
+	lamp_tex = readTexture("textures/metal1.png");
+	teapot_tex = readTexture("textures/porcelain.png");
 	
 	//Macierz jednostkowa
 	glm::mat4 M = glm::mat4(1.0f);
@@ -554,7 +556,7 @@ void drawScene(GLFWwindow* window) {
 
 	glUniform1i(sp->u("textureMap0"), 12);
 	glActiveTexture(GL_TEXTURE12);
-	glBindTexture(GL_TEXTURE_2D, walls_tex);
+	glBindTexture(GL_TEXTURE_2D, teapot_tex);
 
 	glDrawArrays(GL_TRIANGLES, 0, myTeapotVertexCount);
 
