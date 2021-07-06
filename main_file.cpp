@@ -9,16 +9,16 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
-#include <dirent.h>
+#include <headers/dirent.h>
 #include <sys/types.h>
 
-#include "constants.h"
-#include "lodepng.h"
-#include "shaderprogram.h"
-#include "myRoom.h"
+#include "headers/constants.h"
+#include "headers/lodepng.h"
+#include "headers/shaderprogram.h"
+#include "headers/myRoom.h"
 #include "models/myCube.h"
 #include "models/myTeapot.h"
-#include "Mebel.h"
+#include "headers/Mebel.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
