@@ -16,7 +16,7 @@ Project is created with:
 * [Assimp library](https://www.assimp.org)
 	
 ## Setup
-To run this project you should use Visual Studio 2019. Open the "pl_szkielet_03_win.sln" and then compile it (x86).
+To run this project you should use Visual Studio 2019. Open the "3D-Room-Designer.sln" and then compile it (x86).
 
 ## Screenshots
 ============ Default preloaded scene ============
