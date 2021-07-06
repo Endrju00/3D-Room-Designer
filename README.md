@@ -19,8 +19,15 @@ Project is created with:
 To run this project you should use Visual Studio 2019. Open the "pl_szkielet_03_win.sln" and then compile it (x86).
 
 ## Screenshots
-Default preloaded scene
+============ Default preloaded scene ============
 ![](additional/swiatla.jpg)
+![](additional/camera1.jpg)
+![](additional/camera2.jpg)
+![](additional/camera3.jpg)
+
+
+============ Command prompt ============
+![](additional/cmd.jpg)
 
 ## Contributors
 * ### [Andrzej Kapczyński](https://github.com/Endrju00)
