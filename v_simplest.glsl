@@ -18,10 +18,12 @@ in vec2 texCoord0;
 //Zmienne interpolowane
 out vec4 ic;
 
+//dane 1 swiat³a
 out vec4 l1;
 out vec4 n1;
 out vec4 v1;
 
+//dane 2 swiat³a
 out vec4 l2;
 out vec4 n2;
 out vec4 v2;

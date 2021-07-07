@@ -43,9 +43,10 @@ float camera_coords[4][3] = {
 };
 
 //wspolrzedne swiatła
-float l_x1 = 70;
-float l_x2 = -70;
+float l_x1 = 120;
+float l_x2 = -120;
 float l_y = 30;
+float l_z = 20;
 
 
 float camera_x = camera_coords[camera_set][0];
@@ -276,6 +277,8 @@ void key_callback(
 	int mod
 ) {
 	if (action == GLFW_PRESS) {
+
+		//zmiana pozycji kamery
 		if (key == GLFW_KEY_UP) {
 			speed_z = 2 * PI;
 		}
@@ -294,6 +297,8 @@ void key_callback(
 		if (key == GLFW_KEY_M) {
 			menu();
 		}
+
+		//poruszanie meblem
 		if (key == GLFW_KEY_I) {
 			(*meble[p]).rotateModelX();
 		}
@@ -302,22 +307,6 @@ void key_callback(
 		}
 		if (key == GLFW_KEY_P) {
 			(*meble[p]).rotateModelZ();
-		}
-		if (key == GLFW_KEY_J) {
-			l_x1 += 10;
-			cout << "1: " << l_x1 << " 2: " << l_x2 << endl;
-		}
-		if (key == GLFW_KEY_K) {
-			l_x2 -= 10;
-			cout << "1: " << l_x1 << " 2: " << l_x2 << endl;
-		}
-		if (key == GLFW_KEY_Z) {
-			l_y += 10;
-			cout << "y: " << l_y << endl;
-		}
-		if (key == GLFW_KEY_X) {
-			l_y -= 10;
-			cout << "y: " << l_y << endl;
 		}
 		if (key == GLFW_KEY_D) {
 			(*meble[p]).moveRight();
@@ -337,9 +326,10 @@ void key_callback(
 		if (key == GLFW_KEY_E) {
 			(*meble[p]).moveDown();
 		}
-		if (key == GLFW_KEY_TAB) {
+		if (key == GLFW_KEY_TAB) { //zmiana przesuwanego mebla
 			if (p + 1 != meble.size()) p++;
 			else p = 0;
+			cout << ">>Wybrano " << (*meble[p]).name << endl;
 		}
 
 	}
@@ -360,6 +350,7 @@ void windowResizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
+//wczytywanie modelu assimp z obj
 void loadModel(string plik, vector<glm::vec4>& v, vector<glm::vec4>& n, vector<glm::vec2>& t, vector<unsigned int>& ind) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(plik, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals);
@@ -471,11 +462,16 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	glDeleteTextures(1, &walls_tex);
 	glDeleteTextures(1, &floor_tex);
 	glDeleteTextures(1, &table_tex);
+	glDeleteTextures(1, &bed_tex);
+	glDeleteTextures(1, &cupboard_tex);
 	glDeleteTextures(1, &chair_tex);
 	glDeleteTextures(1, &armchair_tex);
 	glDeleteTextures(1, &soundbar1_tex);
 	glDeleteTextures(1, &soundbar2_tex);
 	glDeleteTextures(1, &carpet_tex);
+	glDeleteTextures(1, &vase_tex);
+	glDeleteTextures(1, &lamp_tex);
+	glDeleteTextures(1, &teapot_tex);
 	delete sp;
 }
 
@@ -494,8 +490,8 @@ void drawScene(GLFWwindow* window) {
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M));
 
 	//Przekazanie zmiennej reprezentującej wspołrzędne źródła światła 1 i 2
-	glUniform4f(sp->u("lp1"), l_x1, l_y, 0, 1);
-	glUniform4f(sp->u("lp2"), l_x2, l_y, 0, 1);
+	glUniform4f(sp->u("lp1"), l_x1, l_y, l_z, 1);
+	glUniform4f(sp->u("lp2"), l_x2, l_y, l_z, 1);
 
 	//Rysowanie ścian
 	glm::mat4 M1 = M; 
@@ -519,10 +515,10 @@ void drawScene(GLFWwindow* window) {
 	//Rysowanie głosnika
 	//podstawa
 	glm::mat4 M4 = M; 
-	M4 = glm::translate(M4, glm::vec3(-7.6f, -2.25f, 3.8f));
+	M4 = glm::translate(M4, glm::vec3(-7.6f, -2.5f, 3.8f));
 	M4 = glm::rotate(M4, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	M4 = glm::rotate(M4, glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	M4 = glm::scale(M4, glm::vec3(0.75f, 0.75f, 0.75f));
+	M4 = glm::scale(M4, glm::vec3(0.5f, 0.5f, 0.5f));
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M4));
 	glEnableVertexAttribArray(sp->a("vertex"));
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, myCubeVertices);

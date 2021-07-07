@@ -47,5 +47,5 @@ void main(void) {
 	vec4 ks = kd;
 
 	//Suma dwoch zrodel
-	pixelColor= vec4(kd.rgb * nl1, kd.a) + vec4(ks.rgb*rv1, 0) + vec4(kd.rgb * nl2, kd.a) + vec4(ks.rgb*rv2, 0);;
+	pixelColor= vec4(kd.rgb * nl1, kd.a) + vec4(ks.rgb*rv1, 0) + vec4(kd.rgb * nl2, kd.a) + vec4(ks.rgb*rv2, 0);
 }
