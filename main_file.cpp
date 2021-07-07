@@ -389,7 +389,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glfwSetKeyCallback(window, key_callback);
 
 	//Deklaracja i przypisanie shaderu oraz tekstur
-	sp = new ShaderProgram("v_simplest.glsl", NULL, "f_simplest.glsl");
+	sp = new ShaderProgram("vertex_shader.glsl", NULL, "fragment_shader.glsl");
 	walls_tex = readTexture("textures/walls/light_bricks.png");					// wczytanie domyslnych tekstur
 	floor_tex = readTexture("textures/floor/light_wood.png"); 
 	table_tex = readTexture("textures/wood.png"); 

@@ -61,10 +61,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="f_simplest.glsl">
+    <None Include="fragment_shader.glsl">
       <Filter>Pliki zasobów</Filter>
     </None>
-    <None Include="v_simplest.glsl">
+    <None Include="vertex_shader.glsl">
       <Filter>Pliki zasobów</Filter>
     </None>
   </ItemGroup>
