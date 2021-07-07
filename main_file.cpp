@@ -383,7 +383,7 @@ void loadModel(string plik, vector<glm::vec4>& v, vector<glm::vec4>& n, vector<g
 
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
-	glClearColor(1, 1, 1, 1); //Ustaw kolor czyszczenia bufora kolorów
+	glClearColor(0, 0, 0, 1); //Ustaw kolor czyszczenia bufora kolorów
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
 	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, key_callback);
